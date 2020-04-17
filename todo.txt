@@ -1,0 +1,5 @@
+implement restart button to start new game with same players 
+implement show rules modal
+
+upload to website
+have server always running on my VPS
