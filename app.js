@@ -1,11 +1,25 @@
 // server side code
+// SET UP SERVER-CLIENT CONNECTION
+
+//based on: http://buildnewgames.com/real-time-multiplayer/
+// establish express server 
+var gameport = process.env.PORT || 80;
+var app = require('express')();
+var session = require('express-session')
+
+// var cookieParser = require('cookie-parser');
+// app.use(.use(cookieParser());
+var http = require('http').createServer(app);
+var uuid = require('uuid');
+var io = require('socket.io')(http);
+var verbose = false;
 
 var suits = ["Spades", "Hearts", "Diamonds", "Clubs"];
 var values = ["2", "4", "5", "8", "10", "J", "Q", "K", "A"];
-var roles =["good guy", "good guy", "good guy", "good guy", "terrorist", "terrorist"]
+var all_roles =["good guy", "good guy", "good guy", "good guy", "terrorist", "terrorist"]
+var roles= new Array();
 
 var deck = new Array();
-var currentPlayer = 0;
 
 var cardsFlipped=0;
 var numPlayers=6
@@ -13,30 +27,22 @@ var roundNumber=0;
 
 var numDefused=0;
 var bombFlipped=false;
-
+var gameCreated=false;
 var gameReady=false;
 var players = new Array();
 var playerDictionary ={}; 
 
 
-// SET UP SERVER-CLIENT CONNECTION
-
-//based on: http://buildnewgames.com/real-time-multiplayer/
-// establish express server 
-var gameport = process.env.PORT || 3000;
-var app = require('express')();
-var http = require('http').createServer(app);
-var uuid = require('uuid');
-var io = require('socket.io')(http);
-var verbose = false;
-var clients =[];
-var clientDictionary ={}; 
-
 http.listen( gameport, function() {
-	console.log('listening on *:3000')
+	console.log('listening on *:80')
 });
 
 console.log("connected on port " + gameport);
+
+app.use(session({
+  'secret': '3336odsxtdlksln'
+}))
+
 app.get( '/', function( req, res ){ 
     res.sendFile( __dirname + '/index.html' );
 });
@@ -52,6 +58,10 @@ app.get('/*', function(req, res, next){
 
 
 io.sockets.on("connection", function(client){
+
+  	var clientIp = client.request.connection.remoteAddress;
+
+
 	// create new uuid
 	client.userid = uuid.v4();
 
@@ -60,7 +70,6 @@ io.sockets.on("connection", function(client){
     console.log('\t socket.io:: player ' + client.userid + ' connected');
 
 	client.on('chat message', function(msg){
-
     	io.emit('chat message', msg);
   	});
 
@@ -80,7 +89,6 @@ io.sockets.on("connection", function(client){
 		    }
 		}
 		gameReady=false;
-		numPlayers--;
 
     	delete playerDictionary[client.userid];
 
@@ -99,8 +107,6 @@ io.sockets.on("connection", function(client){
 		} else {
 
 			// randomize order of characters
-			shuffleArray(roles);
-
 			var name = data.customId;
 			client.customId=name;
 			var role = roles[0];
@@ -109,9 +115,11 @@ io.sockets.on("connection", function(client){
 			var hand = new Array();
 			var player = {Name: name, Role:role, Hand: hand, Id:client.userid};
 			players.push(player);
+			console.log(players.length);
 
 			// map player to the client's server id
 			playerDictionary[client.userid] = player;
+			client[clientIp] = player;
 
 		    if (players.length==numPlayers){
 		    	createDeck();
@@ -120,8 +128,35 @@ io.sockets.on("connection", function(client){
 			}
 
 			client.emit('serverAddPlayer', {GameFull:false, Role:role, Id:client.userid});
-
 		}
+
+    });
+
+
+    // when client triggers new game, reset all game data
+    client.on("createNewGame", function(data){
+    	console.log("server starting new game");
+
+    	if (data){
+    		gameCreated=false;
+    	}
+
+    	// reset all game variables
+    	if (!gameCreated){
+    		gameCreated=true;
+    		roles = all_roles.slice();
+			shuffleArray(roles);
+			deck = new Array();
+			cardsFlipped=0;
+			roundNumber=0;
+			numDefused=0;
+			bombFlipped=false;
+			gameReady=false;
+			players = new Array();
+			playerDictionary ={}; 
+
+    	}
+    	io.emit("newGame");
 
     });
 

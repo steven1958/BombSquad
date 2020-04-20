@@ -1,6 +1,11 @@
 // manage connection to server
 
-var socket = io.connect('/');
+var socket = io.connect('/', {
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax : 5000,
+    reconnectionAttempts: Infinity
+  });
 var players = new Array();
 var thisPlayer;
 var active=true;
@@ -14,49 +19,37 @@ $('#form1').submit(function(e){
 
 socket.on('chat message', function(userMessage){
 	console.log(userMessage);
-  $('#messages').append($('<div>').text(userMessage));
+  $('#start-messages').append($('<div>').text(userMessage));
 });
 
 socket.on('onconnected', function(data){
 	console.log( 'Connected successfully to the socket.io server. My server side ID is ' + data.id );
 });
 
-$('#addPlayer').click(function(){
+socket.on("newGame", function(){
+	$('#userInformation').show();
+	$("#newGameButton").hide();
+	$("#currentGame").show();
+	$("#start-messages").show();
+	$('#start-messages').empty();
+	$('#players').empty();
+	$('#hand').empty();
+	$('#restartGame').hide();
 
-	var name= $('#name').val();
+	$('#btnStart').show();
 
-	socket.emit('storeClientInfo', { customId:name });
-
-
-	socket.on('serverAddPlayer', function(response){
-		console.log("server tried to add player");
-		thisPlayer=response.Id;
-		// on "game full" display message saying all players in
-		if (response.GameFull){
-			alert('All players are already in');
-
-		// otherwise let them join game and switch to waiting screen
-		} else {
-
-			var role = response.Role;
-
-		    $('#messages').append($('<h2>').text("You are a "+ role));
-		    $('#messages').append($('<h4>').text("Waiting for Players to Join"));
-
-		    $('#userInformation').hide();
-		}
-	});
-	
+	thisPlayer="";
 });
 
 socket.on("serverStartGame", function(data){
+	console.log(document.cookie);
 	if (data.Ready){
 		active=true;
 
-	    $('#messages').hide();
-	    $('#btnStart').prop('value', 'New Game');
-		$('#btnStart').onClick = 'restartGame()';
-	   
+	    $('#start-messages').hide();
+	    $('#btnStart').hide();
+		$('#restartGame').show();
+
 	   	players=data.Players;
 	    createPlayersUI();
 	    var currentPlayer=0;
@@ -104,16 +97,54 @@ socket.on("showStartRoundButton", function(){
 	$("#btnNextRound").show();
 });
 
+$('#addPlayer').click(function(){
+
+	var name= $('#name').val();
+
+	socket.emit('storeClientInfo', { customId:name });
+
+
+	socket.on('serverAddPlayer', function(response){
+		console.log("server added player");
+		thisPlayer=response.Id;
+		// on "game full" display message saying all players in
+		if (response.GameFull){
+			alert('All players are already in');
+
+		// otherwise let them join game and switch to waiting screen
+		} else {
+
+			var role = response.Role;
+
+		    $('#start-messages').append($('<h2>').text("You are a "+ role));
+		    $('#start-messages').append($('<h4>').text("Waiting for Players to Join"));
+
+		    $('#userInformation').hide();
+		}
+	});
+	
+});
+
 
 $("#btnStart").click(function(){
-	console.log("Start game");
+	// console.log("Start game");
 	socket.emit("startRound", "start");
 });
 
 $("#btnNextRound").click(function(){
 	$("#btnNextRound").hide();
-	console.log("Start next round");
+	// console.log("Start next round");
 	socket.emit("startRound", "start");
+});
+
+$(".btnNewGame").click(function(){
+	// console.log("starting new game");
+	socket.emit("createNewGame", false);
+});
+
+$("#restartGame").click(function(){
+	// console.log("starting new game");
+	socket.emit("createNewGame", true);
 });
 
 

@@ -1,5 +1,22 @@
 implement restart button to start new game with same players 
-implement show rules modal
 
-upload to website
-have server always running on my VPS
+when a player first enters - start a new game unless one is already started
+	-resets everything
+
+when a player leaves game, if their same ip address returns just put back into game
+
+have restart option to clear user, reset deck and roles
+
+if game ends/players leave restart
+
+
+add messages side bar
+
+have count somewhere to track how many defuse cards are flipped
+
+
+
+
+to load screen, have javascript emit to server, and if game started comes back true have join game, else give them option to start new game 
+
+in cookie store unique token - if in cookies, use, otherwise ask for token, server gives it to you

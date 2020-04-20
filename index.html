@@ -13,43 +13,114 @@
 
         <script type="text/javascript" src="/socket.io/socket.io.js"></script>
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-        <script src="player.js" async defer></script>
+        <script src="./player.js" async defer></script>
+        <script src="./modal.js" async defer></script>
 
     </head>
 
     <body>
 
         <div class="game">
-            <h3>Bombsquad</h3>
+            <h3 class="section">Bombsquad</h3>
             <div id="endOfGameMessage"></div>
-            <div id="userInformation">
-                <h3>Enter Username:</h3>
-    		    <div>
-    			    <form action="">
-    			      <input type="text" placeholder="Your name..."  id="name" autocomplete="off" />
-    			      	<button id="addPlayer"  type='button'>Submit</button>
-    			    </form>
-    			</div>
+            <div id="newGame">
+                <input type="button" id="newGameButton" class="btnNewGame btn" value="Start a New Game"> 
             </div>
+            <div id="currentGame">
+                <!-- Rules Modal -->
+                <div id="rulesModal" class="modal">
+
+                  <!-- Modal content -->
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <span class="close">&times;</span>
+                      <h2>How To Play Bomb Squad</h2>
+                    </div>
+                    <div class="rules modal-body">
+                        <h3>1. Set-up</h3>
+                            <ol>
+                                <li>Bomb Squad is a card game, similar to popular games Mafia and Avalon. There are 36 cards in the game, including the ace of clubs, 6 red face cards, and 29 random other cards. The game needs exactly 6 players, dvivided into 2 bad guys, called terrorists, and 4 good guys. </li>
+                            </ol>
+
+                        <h3>2.Roles</h3>
 
 
-    
-            <div class="game-body">
-                <div class="game-options">
+                            <ol>
+                                <li> At the start of the game each player is randomy assigned to be either a good guys or a terrorist. These roles do not change through-out the game</li>
 
+                                <li>The goal of the terrorists is to trigger the bomb, which is doen by flipping the ace of clubs.</li>
+
+                                <li> The goal of the good guys is to defusethe bomb, which is done by flipping all 6 red face cards. </li>
+                            </ol>
+                        <h3>3. Cards</h3>
+
+                            <ol>
+                                <li> Bomb card- The ace of clubs is the bomb. If it gets flipped the game is over and the terrorists win</li>
+
+                                <li> Defuse cards: Any red face card is a defuse card, and there are 6 in the game. The good guys must flip all six defuse cards to win</li>
+
+                                <li> All other cards are neutral </li>
+                            </ol>
+                        <h3>4. Game play</h3>
+                            <ol>
+                                <li> At the start of the game each player is randomly dealt 6 cards face down. Each player must look at his or her hand at the bottom of the screen but not reveal it to anyone else. Everyone's hands are also shown on the board face down. </li>
+
+                                <li> Each player tells all the other players how many defuse cards they have and wether or not they have the bomb. However players may lie. For example, the terrorists may want to conceal it if they have the bomb so that other players are more likely to choose their cards. Similarly a terrorist may want to hide it if they ahve a lot of defuse cards so that players will be less likely to choose their cards. </li>
+
+                                <li> The players must choose someone to go first. This player then can flip over a random card from anyone else's hand. That player will then choose another person's card. </li>
+
+                                <ol>
+                                    <li> No player may flip one of their own cards </li>
+                                </ol>
+
+                                <li> The round ends when either 6 cards have been flipped, or either end of game condition is met. <b>To go to the next round click the next round button </b></li>
+
+
+
+                                <li> The unflipped cards are then reshuffled and new hands of 5 cards are dealt. The rounds are then repeated with the same rules, with one less card per player every time. </li>
+                            </ol>
+                            
+                       <h3> 5. End of Game</h3>
+                        <ol>
+                            <li> As mentioned before, the game ends when either 1. the bomb is flipped and the terrorists win, or 2. all defuse cards are flipped and the good guys win.</li> 
+                        </ol>
+
+                    </div>
+                  </div>
+                </div>
+
+                <div id="userInformation">
+                    <h3 class="section">Enter Username:</h3>
+        		    <div>
+        			    <form action="">
+        			      <input type="text" placeholder="Your name..."  id="name" autocomplete="off" />
+        			      	<button id="addPlayer"  type='button'>Submit</button>
+        			    </form>
+        			</div>
                 </div>
         
-                <div class="status" id="status"></div>
-                <input type="button" id="btnNextRound" class="btn" value="Next Round"> 
-                <input type="button" id="btnStart" class="btn" value="start">                
-                <input type="button" id="btnRules" class="btn" value="How to Play" onclick="showRules()">
+                <div class="game-body">
+                    <div class="game-options">
 
-                <div id="players" class="players">
+                    </div>
+            
+                    <div class="status" id="status"></div>
+                    <input type="button" id="btnNextRound" class="btn" value="Next Round"> 
+                    <input type="button" id="restartGame" class="restartGame btn" value="New Game"> 
+                    <input type="button" id="btnStart" class="btn" value="start">                
+                    <!-- Trigger/Open The Modal -->
+                    <button id="rulesBtn" class="btn">How to Play</button>
+
+
+                    <div id="players" class="players">
+                    </div>
+                    <div class="clear"></div>
                 </div>
-                <div class="clear"></div>
+                <div id="start-messages"></div>
+
+                <div id="chat-messages"></div>
+                <div id="hand"></div>
             </div>
-            <div id="messages"></div>
-            <div id="hand"></div>
         </div>
     </body>
 
